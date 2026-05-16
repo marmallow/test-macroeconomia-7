@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Tema 7 · Consumo, Inversión y Política Monetaria</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1015;--surface:#161922;--surface2:#1d2130;--border:#262b3b;
+    --accent:#c0392b;--accent2:#5b9bd5;--correct:#4ade80;--wrong:#f87171;
+    --text:#e8eaf0;--muted:#828aa3;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding-bottom:80px}
+
+  .hero{
+    background:linear-gradient(135deg,#0e1015 0%,#1e0f0f 50%,#0d1a2e 100%);
+    border-bottom:1px solid var(--border);padding:56px 40px 44px;text-align:center;position:relative;overflow:hidden;
+  }
+  .hero::before{
+    content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);
+    width:600px;height:300px;background:radial-gradient(ellipse,rgba(192,57,43,.1) 0%,transparent 70%);pointer-events:none;
+  }
+  .hero-tag{
+    display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--accent);border:1px solid rgba(192,57,43,.4);
+    padding:5px 16px;border-radius:2px;margin-bottom:22px;
+  }
+  .hero h1{font-family:'Fraunces',serif;font-size:clamp(28px,5vw,52px);font-weight:900;line-height:1.05;color:#fff;margin-bottom:12px;letter-spacing:-.02em}
+  .hero h1 em{color:var(--accent);font-style:italic}
+  .hero p{color:var(--muted);font-size:14px;max-width:560px;margin:0 auto 28px;line-height:1.6}
+
+  #scoreboard{
+    display:flex;justify-content:center;gap:32px;flex-wrap:wrap;padding:20px 40px;
+    background:rgba(22,25,34,.95);border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:100;backdrop-filter:blur(14px);
+  }
+  .score-item{text-align:center}
+  .score-num{font-family:'Fraunces',serif;font-size:28px;font-weight:700;line-height:1}
+  .score-num.green{color:var(--correct)}.score-num.red{color:var(--wrong)}
+  .score-num.blue{color:var(--accent2)}.score-num.yellow{color:#e8c840}
+  .score-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:5px}
+
+  .container{max-width:800px;margin:0 auto;padding:0 22px}
+
+  .section-header{display:flex;align-items:center;gap:14px;margin:52px 0 20px}
+  .section-icon{width:42px;height:42px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .section-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:#fff}
+  .section-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px}
+
+  .q-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;transition:border-color .3s}
+  .q-card.done-ok{border-color:rgba(74,222,128,.4)}
+  .q-card.done-fail{border-color:rgba(248,113,113,.35)}
+
+  .q-header{padding:20px 22px 0;display:flex;align-items:flex-start;gap:12px}
+  .q-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.22);padding:3px 9px;border-radius:4px;flex-shrink:0;margin-top:1px;font-weight:600}
+  .q-text{font-size:14.5px;line-height:1.6;color:var(--text);flex:1}
+
+  .formula-box{margin:12px 22px 0;background:#0d0f17;border:1px solid var(--border);border-left:3px solid var(--accent2);border-radius:6px;padding:11px 15px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#b5d8ff;line-height:1.7}
+
+  .q-options{padding:14px 22px 18px;display:flex;flex-direction:column;gap:8px}
+  .option-btn{
+    background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+    padding:11px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;
+    line-height:1.5;text-align:left;cursor:pointer;transition:all .18s;
+    display:flex;align-items:flex-start;gap:11px;width:100%;
+  }
+  .option-btn:hover:not(:disabled){background:#222838;border-color:rgba(192,57,43,.5);color:#fff}
+  .option-btn:disabled{cursor:default}
+  .option-btn.correct{background:rgba(74,222,128,.1);border-color:var(--correct);color:#fff}
+  .option-btn.wrong{background:rgba(248,113,113,.08);border-color:var(--wrong);color:var(--muted)}
+  .opt-letter{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--border);padding:1px 7px;border-radius:3px;flex-shrink:0;margin-top:2px;font-weight:600;transition:background .18s}
+  .option-btn.correct .opt-letter{background:var(--correct);color:#0d1810}
+  .option-btn.wrong .opt-letter{background:var(--wrong);color:#fff}
+
+  .feedback{margin:0 22px 18px;padding:13px 16px;border-radius:7px;font-size:13px;line-height:1.6;display:none}
+  .feedback.show{display:block;animation:fadeIn .28s ease}
+  .feedback.correct-fb{background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.28);color:#bbf7d0}
+  .feedback.wrong-fb{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.22);color:#fecaca}
+  .feedback strong{color:#fff}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+  #result-banner{display:none;background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:44px 28px;margin:52px 0;text-align:center}
+  #result-banner.show{display:block;animation:fadeIn .5s ease}
+  .result-title{font-family:'Fraunces',serif;font-size:38px;font-weight:900;color:var(--accent);margin-bottom:8px}
+  .result-subtitle{color:var(--muted);font-size:14px;margin-bottom:28px}
+  .result-grid{display:flex;justify-content:center;gap:44px;flex-wrap:wrap}
+  .result-stat .num{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1}
+  .result-stat .lbl{color:var(--muted);font-size:11px;margin-top:5px;letter-spacing:.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+  .reset-btn{margin-top:28px;background:var(--accent);color:#fff;border:none;padding:12px 32px;border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.08em;text-transform:uppercase;transition:opacity .2s}
+  .reset-btn:hover{opacity:.85}
+  .progress-track{height:3px;background:rgba(255,255,255,.07);border-radius:3px;margin:20px auto 0;overflow:hidden;max-width:520px}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s ease;width:0%}
+
+  @media(max-width:580px){
+    .hero{padding:40px 20px 34px}
+    #scoreboard{padding:14px 18px;gap:20px}.score-num{font-size:22px}
+    .container{padding:0 14px}
+    .q-header{padding:16px 16px 0}
+    .q-options{padding:12px 16px 16px}
+    .feedback{margin:0 16px 16px}
+    .formula-box{margin:10px 16px 0}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Macroeconomía Intermedia · UCLM</div>
+  <h1>Test <em>Tema 7</em></h1>
+  <p>35 preguntas al estilo de examen real. Mercado de trabajo, consumo, inversión, política monetaria. Opciones simétricas y breves. Lee con atención: varios ítems incluyen «son ciertas a y b», «ninguna de las anteriores» o «todas las anteriores».</p>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<div id="scoreboard">
+  <div class="score-item"><div class="score-num yellow" id="sc-total">0</div><div class="score-label">Respondidas</div></div>
+  <div class="score-item"><div class="score-num green" id="sc-correct">0</div><div class="score-label">Correctas</div></div>
+  <div class="score-item"><div class="score-num red" id="sc-wrong">0</div><div class="score-label">Erróneas</div></div>
+  <div class="score-item"><div class="score-num blue" id="sc-pct">—</div><div class="score-label">% Aciertos</div></div>
+</div>
+
+<div class="container">
+
+<!-- ======== BLOQUE I: MERCADO DE TRABAJO ======== -->
+<div class="section-header">
+  <div class="section-icon">👷</div>
+  <div>
+    <div class="section-title">Bloque I — Mercado de trabajo y desempleo</div>
+    <div class="section-count">Preguntas 1 – 10</div>
+  </div>
+</div>
+
+<!-- P1 -->
+<div class="q-card" data-q="1" data-correct="b">
+  <div class="q-header"><span class="q-num">1</span>
+    <div class="q-text">Señale para cuál de las siguientes teorías el desempleo es estrictamente voluntario:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Salarios de eficiencia.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Nueva Economía Clásica (NEC) de Lucas.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Trabajadores internos y externos.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Contratos implícitos.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P2 -->
+<div class="q-card" data-q="2" data-correct="d">
+  <div class="q-header"><span class="q-num">2</span>
+    <div class="q-text">Señale para cuál o cuáles de las siguientes teorías el desempleo es involuntario:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Salarios de eficiencia.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Trabajadores internos y externos.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Contratos implícitos.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Son ciertas a, b y c.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P3 -->
+<div class="q-card" data-q="3" data-correct="c">
+  <div class="q-header"><span class="q-num">3</span>
+    <div class="q-text">En la teoría de los salarios de eficiencia, pagar salarios por encima del equilibrio:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Es irracional para el empresario porque eleva los costes sin beneficio alguno.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Aumenta el riesgo moral al reducir el incentivo a esforzarse.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Puede aumentar la productividad y reducir la rotación, siendo racional para la empresa.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Vacía el mercado de trabajo generando pleno empleo.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P4 -->
+<div class="q-card" data-q="4" data-correct="a">
+  <div class="q-header"><span class="q-num">4</span>
+    <div class="q-text">En el modelo de trabajadores internos y externos, el salario lo fijan:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Los trabajadores internos, sin tener en cuenta a los externos desempleados.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Los trabajadores externos, que presionan a la baja el salario para ser contratados.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> El equilibrio entre oferta y demanda de trabajo.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> El empresario de forma unilateral según la productividad marginal del trabajo.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P5 -->
+<div class="q-card" data-q="5" data-correct="c">
+  <div class="q-header"><span class="q-num">5</span>
+    <div class="q-text">Un aumento de la tasa de cobertura del seguro de desempleo provoca en el equilibrio precio-salarios:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Una disminución de la tasa natural de paro y un aumento del salario real.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Una disminución del salario real sin efecto sobre la tasa de paro.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Un aumento de la tasa natural de paro y del salario real de equilibrio.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Ningún efecto, pues el mercado se ajusta por variaciones de la cantidad de empleo.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P6 -->
+<div class="q-card" data-q="6" data-correct="b">
+  <div class="q-header"><span class="q-num">6</span>
+    <div class="q-text">En el modelo post-keynesiano del mercado de trabajo (NEK):</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> El desempleo es voluntario y la oferta de trabajo tiene pendiente positiva.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> El desempleo es involuntario y la oferta de trabajo tiene un tramo de pendiente positiva.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> El desempleo es involuntario y la demanda de trabajo tiene pendiente positiva.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> El desempleo es voluntario y la demanda de trabajo tiene pendiente negativa.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P7 -->
+<div class="q-card" data-q="7" data-correct="d">
+  <div class="q-header"><span class="q-num">7</span>
+    <div class="q-text">Según los monetaristas (Friedman) y la NEC (Lucas), el desempleo existente en el largo plazo es:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Involuntario, generado por la rigidez de salarios a la baja.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Estructural, consecuencia de la desigualdad tecnológica entre sectores.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Cíclico, originado por las fluctuaciones de la demanda agregada.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Voluntario, compatible con la tasa natural de paro (NAIRU).</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P8 -->
+<div class="q-card" data-q="8" data-correct="a">
+  <div class="q-header"><span class="q-num">8</span>
+    <div class="q-text">La teoría de contratos implícitos (Azariadis) explica la rigidez salarial porque:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> El contrato actúa como un seguro implícito: el salario es relativamente estable frente a variaciones de la demanda, siendo los beneficios los que absorben las fluctuaciones.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Los trabajadores internos impiden a los externos presionar a la baja los salarios.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Pagar por encima del equilibrio maximiza el esfuerzo por trabajador.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Son ciertas a y c.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P9 -->
+<div class="q-card" data-q="9" data-correct="c">
+  <div class="q-header"><span class="q-num">9</span>
+    <div class="q-text">La NAIRU se define como:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> La tasa de paro que minimiza la inflación en el corto plazo.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> La tasa de paro de equilibrio que garantiza el pleno empleo absoluto.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> La tasa de paro estructural que compatibiliza las demandas de empresarios y trabajadores internos sin acelerar la inflación.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> La tasa de paro cíclico correspondiente al punto de la curva de Phillips a corto plazo.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P10 -->
+<div class="q-card" data-q="10" data-correct="b">
+  <div class="q-header"><span class="q-num">10</span>
+    <div class="q-text">La reducción de la tasa de cobertura del seguro de desempleo, según el modelo precio-salarios, produce:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Un aumento de la tasa de paro a largo plazo.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Una disminución de la tasa natural de paro y del salario real de equilibrio.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Una disminución de la tasa natural de paro y un aumento del salario real.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Un aumento del salario real sin efecto sobre la tasa de paro.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- ======== BLOQUE II: CONSUMO ======== -->
+<div class="section-header">
+  <div class="section-icon">💰</div>
+  <div>
+    <div class="section-title">Bloque II — Consumo y ahorro</div>
+    <div class="section-count">Preguntas 11 – 22</div>
+  </div>
+</div>
+
+<!-- P11 -->
+<div class="q-card" data-q="11" data-correct="b">
+  <div class="q-header"><span class="q-num">11</span>
+    <div class="q-text">La teoría neoclásica del consumo y el ahorro establece:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Una relación inversa entre el ahorro y el tipo de interés.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Que el consumo depende de la renta presente, la renta futura esperada y el tipo de interés.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Que el consumo depende únicamente del efecto riqueza.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Es la base teórica de la hipótesis del ciclo vital.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P12 -->
+<div class="q-card" data-q="12" data-correct="c">
+  <div class="q-header"><span class="q-num">12</span>
+    <div class="q-text">Según la hipótesis del ciclo vital (Modigliani), un individuo que comienza a trabajar a los 25 años, se jubila a los 65 y vive hasta los 85, con renta anual de 30.000 €, ¿cuánto consume anualmente?</div>
+  </div>
+  <div class="formula-box">C · v = Y · a → C = (a/v) · Y | a = años activos | v = años de vida</div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> 30.000 € anuales, porque consume toda su renta corriente.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> 20.000 € anuales.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> 24.000 € anuales.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> 15.000 € anuales.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P13 -->
+<div class="q-card" data-q="13" data-correct="d">
+  <div class="q-header"><span class="q-num">13</span>
+    <div class="q-text">Sea un individuo que recibe una herencia de 240.000 € a los 40 años, con esperanza de vida de 80 años. Según el ciclo vital, ¿cuál es la afirmación correcta?</div>
+  </div>
+  <div class="formula-box">Consumo anual herencia = herencia / años restantes de vida</div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Su consumo anual procedente de la herencia es de 8.000 €.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Si muere a los 70, deja una herencia de 40.000 €.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Su riqueza a los 60 años es de 160.000 €.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Su consumo anual es de 6.000 € y su riqueza a los 60 años es de 120.000 €.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P14 -->
+<div class="q-card" data-q="14" data-correct="a">
+  <div class="q-header"><span class="q-num">14</span>
+    <div class="q-text">Sea un individuo que recibe una herencia de 180.000 € a los 45 años, con esperanza de vida de 75 años. Si finalmente muere a los 65, ¿qué herencia deja?</div>
+  </div>
+  <div class="formula-box">C_herencia = 180.000 / 30 años = 6.000 €/año</div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> 60.000 €</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> 0 €, porque el ciclo vital supone que no se quiere dejar herencia.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> 90.000 €</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> 120.000 €</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P15 -->
+<div class="q-card" data-q="15" data-correct="c">
+  <div class="q-header"><span class="q-num">15</span>
+    <div class="q-text">De acuerdo con la hipótesis de la renta permanente (Friedman):</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> La propensión marginal a consumir de la renta permanente es menor que la de la renta transitoria.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> La propensión marginal a consumir de la renta transitoria es igual a la de la renta permanente.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> La propensión marginal a consumir de la renta transitoria es cercana a cero; la de la renta permanente es cercana a uno.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> El tipo de interés no afecta al consumo bajo este enfoque.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P16 -->
+<div class="q-card" data-q="16" data-correct="b">
+  <div class="q-header"><span class="q-num">16</span>
+    <div class="q-text">Un individuo tiene una función de consumo C = 0,8·Yp y considera permanente solo el 20% de los incrementos de renta. Su renta en t es 20.000 €. En t+1 su renta aumenta a 30.000 €. ¿Cuánto consume en t+1?</div>
+  </div>
+  <div class="formula-box">Yp(t+1) = Yp(t) + 0,20·ΔY | ΔY = 10.000 €</div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> 24.000 €</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> 17.600 €</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> 24.000 €</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> 16.000 €</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P17 -->
+<div class="q-card" data-q="17" data-correct="d">
+  <div class="q-header"><span class="q-num">17</span>
+    <div class="q-text">El mismo individuo de la pregunta 16 (C = 0,8·Yp, 20% permanente). En t+2 su renta sigue siendo 30.000 € y el aumento ya está consolidado. ¿Cuánto consume en t+2?</div>
+  </div>
+  <div class="formula-box">Yp(t+2) = Yp(t+1) + 0,20·ΔY | El aumento sigue siendo ΔY = 10.000 €</div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> 17.600 €, igual que en t+1.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> 24.000 €, pues ahora la renta es ya permanente.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> 20.000 €, el consumo base no varía.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> 19.200 €, porque Yp(t+2) = 22.000 + 0,20·10.000 = 24.000 → C = 0,8·24.000.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P18 -->
+<div class="q-card" data-q="18" data-correct="a">
+  <div class="q-header"><span class="q-num">18</span>
+    <div class="q-text">Según la teoría de la equivalencia ricardiana (Barro), una reducción de impuestos financiada con deuda pública:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> No modifica el consumo ni la renta, porque los agentes ahorran el importe exacto de la reducción fiscal para pagar los futuros impuestos.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Aumenta el consumo y la renta porque los agentes gastan la mayor renta disponible.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Reduce el consumo porque el aumento del déficit genera incertidumbre.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Aumenta el consumo a corto plazo y lo reduce a largo plazo.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P19 -->
+<div class="q-card" data-q="19" data-correct="c">
+  <div class="q-header"><span class="q-num">19</span>
+    <div class="q-text">Según la hipótesis de las expectativas racionales aplicada al consumo (Hall), el consumo:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Varía siempre que cambia la renta corriente, incluso si el cambio era esperado.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Depende exclusivamente de la riqueza y no del tipo de interés.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Solo varía ante cambios imprevistos en la renta; los cambios esperados ya están incorporados y no producen efecto.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Sigue un patrón sistemático predecible basado en la renta permanente pasada.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P20 -->
+<div class="q-card" data-q="20" data-correct="b">
+  <div class="q-header"><span class="q-num">20</span>
+    <div class="q-text">La evidencia empírica cuestiona la hipótesis de las expectativas racionales en el consumo porque:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> El consumo no reacciona nunca ante cambios en la renta corriente.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> El consumo también varía cuando cambia la renta corriente esperada, y hay restricciones crediticias que impiden suavizar el consumo.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> El tipo de interés real afecta al ahorro, lo que contradice el modelo neoclásico.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Los agentes ahorran en exceso durante la vejez, contrariamente a lo que predice el ciclo vital.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P21 -->
+<div class="q-card" data-q="21" data-correct="d">
+  <div class="q-header"><span class="q-num">21</span>
+    <div class="q-text">Un gasto público financiado con deuda, según la equivalencia ricardiana:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Tiene efecto multiplicador positivo, igual que si se financia con impuestos.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Tiene efecto multiplicador mayor que si se financia con impuestos.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Tiene efecto multiplicador positivo pero menor que si se financia con impuestos.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> No tiene efecto multiplicador, pues el consumo privado cae en la misma cuantía que sube el gasto público.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P22 -->
+<div class="q-card" data-q="22" data-correct="b">
+  <div class="q-header"><span class="q-num">22</span>
+    <div class="q-text">Señale cuál de las siguientes afirmaciones sobre el ciclo vital es FALSA:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> El individuo ahorra durante la vida activa y desahorra durante la jubilación.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> La propensión al consumo de la renta permanente es menor que la de la riqueza.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Una herencia recibida eleva el consumo de todos los períodos restantes de vida, no solo del período actual.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> En el modelo básico no existen pensiones ni rentas del capital.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- ======== BLOQUE III: INVERSIÓN ======== -->
+<div class="section-header">
+  <div class="section-icon">🏗️</div>
+  <div>
+    <div class="section-title">Bloque III — Inversión</div>
+    <div class="section-count">Preguntas 23 – 27</div>
+  </div>
+</div>
+
+<!-- P23 -->
+<div class="q-card" data-q="23" data-correct="b">
+  <div class="q-header"><span class="q-num">23</span>
+    <div class="q-text">Si la Bolsa de valores cae, es de esperar que la inversión:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Aumente, según la q de Tobin.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Disminuya, según la q de Tobin.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Aumente, según la teoría del coste de uso del capital.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> No varíe, pues la bolsa no afecta a la inversión real.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P24 -->
+<div class="q-card" data-q="24" data-correct="c">
+  <div class="q-header"><span class="q-num">24</span>
+    <div class="q-text">Según la teoría neoclásica de la inversión, un aumento del tipo de interés real:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Aumenta la inversión al elevar la rentabilidad del capital.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> No afecta a la inversión porque las empresas usan fondos propios.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Reduce la inversión al elevar el coste de uso del capital.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Aumenta la inversión porque reduce el coste de oportunidad del ahorro.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P25 -->
+<div class="q-card" data-q="25" data-correct="d">
+  <div class="q-header"><span class="q-num">25</span>
+    <div class="q-text">La q de Tobin es mayor que 1 cuando:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> El coste de reposición del capital supera su valor de mercado.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> El valor de mercado del capital es igual a su coste de reposición.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> La bolsa cae por debajo del valor contable de los activos.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> El valor de mercado del capital instalado supera su coste de reposición, incentivando la inversión.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P26 -->
+<div class="q-card" data-q="26" data-correct="a">
+  <div class="q-header"><span class="q-num">26</span>
+    <div class="q-text">Si la Bolsa de valores sube, es de esperar que la inversión:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Aumente, según la q de Tobin.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Disminuya, según la q de Tobin.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Aumente, según el principio del acelerador.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Ninguna de las anteriores.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P27 -->
+<div class="q-card" data-q="27" data-correct="c">
+  <div class="q-header"><span class="q-num">27</span>
+    <div class="q-text">Según el principio del acelerador, la inversión depende de:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> El nivel de producción, no de su variación.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> El tipo de interés real y la productividad marginal del capital.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> La variación de la producción: I = v·ΔY.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> El valor de mercado del capital relativo a su coste de reposición.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- ======== BLOQUE IV: POLÍTICA MONETARIA ======== -->
+<div class="section-header">
+  <div class="section-icon">🏦</div>
+  <div>
+    <div class="section-title">Bloque IV — Política monetaria, efecto Fisher y regla de Taylor</div>
+    <div class="section-count">Preguntas 28 – 35</div>
+  </div>
+</div>
+
+<!-- P28 -->
+<div class="q-card" data-q="28" data-correct="c">
+  <div class="q-header"><span class="q-num">28</span>
+    <div class="q-text">En relación al efecto Fisher, es cierto que:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> A largo plazo, una política monetaria expansiva reduce el tipo de interés real.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> A corto plazo, una política monetaria expansiva aumenta el tipo de interés nominal.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> A largo plazo, el crecimiento de la oferta monetaria se traslada íntegramente a la inflación y al tipo de interés nominal, sin afectar al tipo real.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> El tipo de interés nominal es igual al real menos la inflación esperada.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P29 -->
+<div class="q-card" data-q="29" data-correct="a">
+  <div class="q-header"><span class="q-num">29</span>
+    <div class="q-text">En el corto plazo, una política monetaria expansiva (aumento de M):</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Reduce el tipo de interés nominal y el real, aumentando la producción.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Reduce el tipo nominal pero aumenta el real al acelerar la inflación.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Aumenta el tipo nominal sin efecto sobre el real ni la producción.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Reduce el tipo real pero no el nominal, ya que la inflación sube inmediatamente.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P30 -->
+<div class="q-card" data-q="30" data-correct="d">
+  <div class="q-header"><span class="q-num">30</span>
+    <div class="q-text">Según la regla de Taylor, el banco central debe subir el tipo de interés:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Si la inflación es menor que la inflación objetivo.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Si la tasa de paro es mayor que la tasa natural.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Si cae la tasa de inflación en el período.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Si la inflación supera el objetivo o si la tasa de paro es inferior a la natural.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P31 -->
+<div class="q-card" data-q="31" data-correct="b">
+  <div class="q-header"><span class="q-num">31</span>
+    <div class="q-text">Según la regla de Taylor, si la inflación es igual a la objetivo y el paro igual al natural, el banco central fijará el tipo de interés:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Por encima de i*, para prevenir futuras desviaciones inflacionistas.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> En i*, el tipo de interés objetivo neutro.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Por debajo de i*, para estimular el crecimiento.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> En cero, pues no hay desequilibrios que corregir.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P32 -->
+<div class="q-card" data-q="32" data-correct="c">
+  <div class="q-header"><span class="q-num">32</span>
+    <div class="q-text">En relación al tipo de interés real y nominal, señale la afirmación correcta:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> El tipo de interés nominal es igual al real menos la inflación esperada.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> En el largo plazo, una política fiscal expansiva eleva el tipo nominal pero no el real.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> En el largo plazo, una política fiscal expansiva eleva tanto el tipo nominal como el real.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> En el corto plazo, la política monetaria expansiva eleva el tipo real al reducir el nominal.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P33 -->
+<div class="q-card" data-q="33" data-correct="d">
+  <div class="q-header"><span class="q-num">33</span>
+    <div class="q-text">En el Nuevo Consenso en Política Monetaria, el banco central controla:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> La cantidad de dinero directamente, siguiendo la regla monetarista.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Tanto el tipo de interés a corto como a largo plazo.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> El tipo de interés a largo plazo para anclar las expectativas de inflación.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> El tipo de interés a corto plazo; los tipos a largo plazo los determina el mercado según la rentabilidad esperada de los activos.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P34 -->
+<div class="q-card" data-q="34" data-correct="b">
+  <div class="q-header"><span class="q-num">34</span>
+    <div class="q-text">La estructura temporal de los tipos de interés tiene generalmente pendiente positiva porque:</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> El banco central fija los tipos a largo plazo por encima de los de corto plazo.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> A mayor plazo, mayor riesgo e incertidumbre, por lo que los inversores exigen mayor rentabilidad.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Las expectativas de inflación siempre son decrecientes con el tiempo.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Son ciertas a y c.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- P35 -->
+<div class="q-card" data-q="35" data-correct="c">
+  <div class="q-header"><span class="q-num">35</span>
+    <div class="q-text">En el largo plazo, el efecto Fisher implica que una política monetaria restrictiva (reducción de M):</div>
+  </div>
+  <div class="q-options">
+    <button class="option-btn" data-opt="a"><span class="opt-letter">a</span> Reduce el tipo de interés nominal y el real.</button>
+    <button class="option-btn" data-opt="b"><span class="opt-letter">b</span> Reduce el tipo de interés nominal pero no el real.</button>
+    <button class="option-btn" data-opt="c"><span class="opt-letter">c</span> Reduce la inflación y el tipo nominal en la misma cuantía, sin alterar el tipo real.</button>
+    <button class="option-btn" data-opt="d"><span class="opt-letter">d</span> Reduce el tipo real sin afectar al nominal ni a la inflación.</button>
+  </div>
+  <div class="feedback"></div>
+</div>
+
+<!-- RESULT -->
+<div id="result-banner">
+  <div class="result-title" id="result-title">Test completado</div>
+  <div class="result-subtitle" id="result-subtitle"></div>
+  <div class="result-grid">
+    <div class="result-stat"><div class="num" style="color:var(--correct)" id="rs-correct">0</div><div class="lbl">Aciertos</div></div>
+    <div class="result-stat"><div class="num" style="color:var(--wrong)" id="rs-wrong">0</div><div class="lbl">Fallos</div></div>
+    <div class="result-stat"><div class="num" style="color:#e8c840" id="rs-pct">0%</div><div class="lbl">Nota</div></div>
+  </div>
+  <button class="reset-btn" onclick="resetTest()">Repetir</button>
+</div>
+
+</div>
+
+<script>
+const TOTAL = 35;
+let answered = new Set(), ok = 0, fail = 0;
+
+const FB = {
+  1:"La NEC (Lucas) considera que los parados «se toman vacaciones voluntarias» dentro de un horizonte laboral amplio. El desempleo es voluntario y compatible con la tasa natural. Las otras teorías (salarios de eficiencia, internos-externos, contratos implícitos) generan desempleo involuntario.",
+  2:"Las tres teorías forman parte de la NEK y generan desempleo involuntario. Los salarios de eficiencia crean exceso de oferta laboral por encima del salario de equilibrio; los internos-externos excluyen a los parados del proceso de negociación; los contratos implícitos estabilizan salarios por encima del mercado.",
+  3:"En salarios de eficiencia (Akerloff), pagar por encima del equilibrio es racional porque maximiza el ratio esfuerzo/euro, reduce rotación y mejora la selección de trabajadores. No vacía el mercado (no es b) y sí reduce el riesgo moral (no es b, que lo invierte). La opción b invierte el efecto: salarios altos reducen el riesgo moral al hacer más costoso ser despedido.",
+  4:"En el modelo de internos-externos, los trabajadores internos (con poder de negociación) fijan el salario para maximizar su bienestar, ignorando a los parados externos que estarían dispuestos a trabajar por menos. Por eso el salario puede mantenerse por encima del equilibrio.",
+  5:"Mayor cobertura del seguro de desempleo reduce el coste de estar parado → aumenta el poder de negociación de los trabajadores → la curva de salarios se desplaza al alza → mayor salario real y mayor tasa natural de paro en el equilibrio precio-salarios.",
+  6:"En el modelo post-keynesiano (NEK), el desempleo es involuntario (hay trabajadores que quieren trabajar al salario vigente y no pueden). La oferta de trabajo tiene un tramo de pendiente positiva (a mayor salario, mayor oferta) y otro inelástico o inverso.",
+  7:"Para monetaristas y NEC, el desempleo a largo plazo es voluntario: es la tasa natural compatible con la NAIRU. Los «parados» han elegido no trabajar al salario de mercado (monetaristas: 'oportunistas del desempleo'; NEC: vacaciones voluntarias).",
+  8:"Los contratos implícitos actúan como un seguro: los trabajadores, más aversos al riesgo, aceptan salarios estables a cambio de que los empresarios no los despidan ante caídas de la demanda. Son los beneficios los que fluctúan, no los salarios.",
+  9:"La NAIRU (Non-Accelerating Inflation Rate of Unemployment) es la tasa de paro estructural de largo plazo donde las demandas salariales de trabajadores internos y las condiciones de rentabilidad de los empresarios son compatibles, sin que la inflación se acelere.",
+  10:"Menor cobertura del seguro → estar parado es más costoso → los trabajadores negocian desde una posición más débil → la curva de salarios se desplaza a la baja → menor salario real de equilibrio Y menor tasa natural de paro. Es el efecto simétrico al de la pregunta 5.",
+  11:"La teoría neoclásica del consumo (Fisher) postula que el consumo depende de la renta presente, la renta futura (riqueza) y el tipo de interés (coste de oportunidad de consumir hoy vs mañana). El ahorro tiene relación positiva (no negativa) con el tipo de interés.",
+  12:"a = 65−25 = 40 años activos; v = 85−25 = 60 años de vida total. C = (a/v)·Y = (40/60)·30.000 = 24.000 €/año. Ahorra 6.000 €/año durante 40 años para consumir en los 20 de jubilación.",
+  13:"Años restantes = 80−40 = 40. C_herencia = 240.000/40 = 6.000 €/año. Riqueza a los 60 = 240.000 − 6.000·20 = 120.000 €. Si muere a los 70: años consumidos = 30 → herencia = 240.000 − 6.000·30 = 60.000 €. La opción d es la única que combina correctamente los dos cálculos.",
+  14:"C_herencia = 180.000/30 = 6.000 €/año. Si muere a los 65: años consumidos = 65−45 = 20. Herencia = 180.000 − 6.000·20 = 180.000 − 120.000 = 60.000 €. El modelo supone que no se quiere dejar herencia, pero si muere antes, matemáticamente sí deja una.",
+  15:"Friedman distingue: la renta permanente (regular, esperada) tiene una PMaC cercana a 1 porque el agente ya lo ha incorporado a su plan de consumo. La renta transitoria (irregular, inesperada) tiene PMaC ≈ 0 porque el agente la ahorra al no saber si continuará.",
+  16:"Yp(t) = 20.000 (todo era permanente). ΔY = 10.000; se considera permanente solo el 20% = 2.000. Yp(t+1) = 20.000 + 2.000 = 22.000. C(t+1) = 0,8·22.000 = 17.600 €. Las opciones a y c muestran el mismo valor (24.000) que sería el consumo si el aumento fuera totalmente permanente.",
+  17:"En t+2, la renta sigue siendo 30.000 y el aumento de 10.000 lleva ya dos períodos. Se sigue considerando permanente solo el 20% de la variación entre Yp(t+1) y Yp(t+2). Pero ΔY sigue siendo 10.000 (la renta no sube más). Yp(t+2) = 22.000 + 0,20·10.000 = 24.000. C = 0,8·24.000 = 19.200 €. La opción b (24.000) sería si toda la renta fuera ya permanente de golpe.",
+  18:"Según la equivalencia ricardiana, los agentes racionales saben que la deuda pública de hoy son impuestos futuros. Por tanto, ahorran exactamente el importe de la rebaja fiscal para pagarlos. El consumo y la renta no varían: el multiplicador del gasto financiado con deuda es cero.",
+  19:"Con expectativas racionales, los agentes ya incorporan en su consumo todo lo que es predecible. Solo los shocks imprevistos pueden alterar el consumo. Por eso el consumo sigue un «paseo aleatorio».",
+  20:"La evidencia muestra que el consumo sí reacciona ante cambios esperados en la renta (excess sensitivity) y que las restricciones crediticias impiden suavizar el consumo incluso cuando se espera mayor renta futura. Esto contradice la hipótesis de expectativas racionales pura.",
+  21:"La equivalencia ricardiana (Barro) predice que el consumo privado cae exactamente en la cuantía del aumento del gasto público financiado con deuda, pues los hogares ahorran anticipando futuros impuestos. El multiplicador es nulo.",
+  22:"En el ciclo vital, la propensión al consumo de la renta permanente (a/v) es MAYOR que la de la riqueza (1/v). La riqueza se reparte entre más años de vida (v), mientras la renta permanente se reparte solo entre los años restantes de vida activa. La opción b lo invierte.",
+  23:"Cuando la bolsa cae, el valor de mercado del capital instalado disminuye → q de Tobin < 1 → no es rentable ampliar la capacidad productiva → la inversión disminuye. El coste de uso no depende directamente de la bolsa, y el acelerador depende del crecimiento de la producción.",
+  24:"Mayor tipo de interés real → mayor coste de uso del capital (cu = r + δ) → la PMgK debe ser mayor para que la inversión sea rentable → se reduce el stock de capital deseado → cae la inversión.",
+  25:"q de Tobin = valor de mercado / coste de reposición. Si q > 1, el mercado valora el capital por encima de lo que costaría reponerlo → incentivo a invertir para crear más capital valioso. Si q < 1, ocurre lo contrario.",
+  26:"Si la bolsa sube → q de Tobin aumenta → valor de mercado del capital > coste de reposición → conviene ampliar el stock de capital → aumenta la inversión. El acelerador no depende de la bolsa sino de la variación del output.",
+  27:"El acelerador establece I = v·ΔY: la inversión es proporcional a la variación (incremento) del output. Si el output no crece, no hay inversión neta aunque el nivel sea elevado.",
+  28:"Efecto Fisher a LP: el crecimiento de M se traduce en inflación igual a ese crecimiento, sin alterar r_n. Por tanto, el tipo nominal sube proporcionalmente (i = r + π). A LP, la PM no afecta al tipo real. La opción d invierte la ecuación de Fisher (i = r + π, no r − π).",
+  29:"A corto plazo, el aumento de M eleva la oferta real de dinero (porque la inflación tarda en ajustarse) → caen los tipos nominales (LM) → cae el tipo real (IS) → aumenta la producción. Es el efecto keynesiano de corto plazo antes de que la inflación se ajuste.",
+  30:"La regla de Taylor: i_t = i* + a(π − π*) − b(u − u_n). El BC sube i si la inflación supera el objetivo (a > 0) O si la tasa de paro cae por debajo de la natural (b > 0 → −b(u − u_n) positivo cuando u < u_n).",
+  31:"Cuando ambos objetivos se cumplen (π = π* y u = u_n), los dos términos adicionales son cero → i_t = i*. El BC no tiene motivo para desviarse de su tipo objetivo neutro.",
+  32:"A LP, una política fiscal expansiva eleva la demanda de fondos prestables → sube el tipo de interés real (r_n). Como i = r + π, al subir r también sube i aunque la PM no cambie. A CP, una PM expansiva reduce ambos tipos (efecto liquidez). La ecuación de Fisher es i = r + π^e, no i = r − π.",
+  33:"En el Nuevo Consenso, el BC fija el tipo de interés a corto plazo (tipo de intervención) como variable instrumental. Los tipos de interés a largo plazo los determinan los mercados financieros según la rentabilidad esperada de los activos y las expectativas sobre la política futura del BC.",
+  34:"La curva de tipos tiene pendiente positiva principalmente por prima de riesgo e incertidumbre: a mayor plazo, mayor riesgo de impago, de variaciones de tipos y de pérdida de poder adquisitivo, exigiendo mayor rentabilidad. El BC no fija tipos a largo plazo.",
+  35:"A LP (efecto Fisher), una reducción de M reduce la inflación en la misma cuantía → el tipo nominal cae igual que la inflación → el tipo real (r = i − π) no varía. A diferencia del CP, donde la PM sí afecta al tipo real.",
+};
+
+document.querySelectorAll('.option-btn').forEach(b => b.addEventListener('click', () => go(b)));
+
+function go(btn) {
+  const card = btn.closest('.q-card');
+  const q = card.dataset.q;
+  if (answered.has(q)) return;
+  const correct = card.dataset.correct;
+  const chosen = btn.dataset.opt;
+  const isOk = chosen === correct;
+
+  card.querySelectorAll('.option-btn').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.opt === correct) b.classList.add('correct');
+    else if (b === btn) b.classList.add('wrong');
+  });
+
+  const fb = card.querySelector('.feedback');
+  fb.innerHTML = isOk
+    ? `<strong>✓ Correcto.</strong> ${FB[q]||''}`
+    : `<strong>✗ Incorrecto. Correcta: ${correct.toUpperCase()}.</strong> ${FB[q]||''}`;
+  fb.classList.add('show', isOk ? 'correct-fb' : 'wrong-fb');
+  card.classList.add(isOk ? 'done-ok' : 'done-fail');
+  answered.add(q);
+  if (isOk) ok++; else fail++;
+  updateScore();
+  if (answered.size === TOTAL) showResult();
+}
+
+function updateScore() {
+  document.getElementById('sc-total').textContent = answered.size;
+  document.getElementById('sc-correct').textContent = ok;
+  document.getElementById('sc-wrong').textContent = fail;
+  const p = answered.size ? Math.round(ok/answered.size*100) : 0;
+  document.getElementById('sc-pct').textContent = answered.size ? p+'%' : '—';
+  document.getElementById('progress-fill').style.width = (answered.size/TOTAL*100)+'%';
+}
+
+function showResult() {
+  const pct = Math.round(ok/TOTAL*100);
+  document.getElementById('rs-correct').textContent = ok;
+  document.getElementById('rs-wrong').textContent = fail;
+  document.getElementById('rs-pct').textContent = pct+'%';
+  const t = pct>=90?['¡Sobresaliente!','Dominio sólido del Tema 7.']:pct>=75?['Notable','Buen manejo de los modelos.']:pct>=60?['Aprobado','Repasa los conceptos fallados.']:pct>=40?['Necesita repaso','Vuelve a los apuntes.']:['Suspendido','Estudia el tema antes de repetir.'];
+  document.getElementById('result-title').textContent=t[0];
+  document.getElementById('result-subtitle').textContent=t[1];
+  const b = document.getElementById('result-banner');
+  b.classList.add('show');
+  b.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function resetTest() {
+  answered.clear(); ok=0; fail=0;
+  document.querySelectorAll('.q-card').forEach(c=>{
+    c.classList.remove('done-ok','done-fail');
+    c.querySelectorAll('.option-btn').forEach(b=>{b.disabled=false;b.classList.remove('correct','wrong');});
+    const fb=c.querySelector('.feedback');fb.classList.remove('show','correct-fb','wrong-fb');fb.innerHTML='';
+  });
+  document.getElementById('result-banner').classList.remove('show');
+  updateScore();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
